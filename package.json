@@ -1,0 +1,24 @@
+{
+  "name": "opencode-codex-stats",
+  "version": "0.1.0",
+  "description": "Codex usage statistics in the OpenCode terminal",
+  "type": "module",
+  "repository": "github:kissejau/opencode-codex-stats",
+  "files": ["server.ts", "tui.tsx", "rpc.ts", "polling.js", "settings.js", "usage.js"],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "exports": {
+    ".": "./server.ts",
+    "./tui": "./tui.tsx",
+    "./rpc": "./rpc.ts"
+  },
+  "dependencies": {
+    "@opencode/plugin": "2.4.2"
+  },
+  "peerDependencies": {
+    "@opentui/core": ">=0.6.6",
+    "@opentui/solid": ">=0.6.6",
+    "solid-js": ">=1.9.0"
+  }
+}
