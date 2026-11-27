@@ -12,35 +12,47 @@ export default Plugin.define({
   async setup(ctx) {
     let cache: UsageSnapshot | undefined
     let accountKey: string | undefined
+    let generation = 0
     let lastAttempt = 0
     let pending: Promise<UsageSnapshot> | undefined
 
+    const accountChanged = () => ({ status: "unavailable" as const, message: "OpenAI account changed; refreshing limits" })
     const registration = await ctx.rpc.register(CodexLimits, {
       read: async (input, { signal }) => {
+        const initialGeneration = generation
+        const initialAccountKey = accountKey
         const requestInput = input as { refresh?: boolean; pollIntervalSeconds?: number } | undefined
         const connection = await ctx.integration.connection.active("openai")
         if (!connection || connection.type !== "credential") {
+          if (generation !== initialGeneration) return accountChanged()
           cache = undefined
           accountKey = undefined
+          generation++
           return { status: "unavailable", message: "Connect OpenAI with ChatGPT OAuth in /connect" }
         }
 
         const credential = await ctx.integration.connection.resolve(connection).catch(() => undefined)
         if (credential?.type !== "oauth") {
+          if (generation !== initialGeneration) return accountChanged()
           cache = undefined
           accountKey = undefined
+          generation++
           return { status: "unavailable", message: "Connect OpenAI with ChatGPT OAuth in /connect" }
         }
 
         const accountID = credential.metadata?.accountID
         if (!credential.access) {
+          if (generation !== initialGeneration) return accountChanged()
           cache = undefined
           accountKey = undefined
+          generation++
           return { status: "unavailable", message: "OpenAI OAuth access token is unavailable; reconnect in /connect" }
         }
         if (typeof accountID !== "string" || !accountID) {
+          if (generation !== initialGeneration) return accountChanged()
           cache = undefined
           accountKey = undefined
+          generation++
           const methodID = credential.methodID ?? "unknown"
           const metadataKeys = Object.keys(credential.metadata ?? {}).join(", ") || "none"
           return {
@@ -50,20 +62,26 @@ export default Plugin.define({
         }
 
         const key = `${connection.id}:${accountID}`
+        if (generation !== initialGeneration &&
+            !(initialAccountKey === undefined && generation === initialGeneration + 1 && key === accountKey)) return accountChanged()
         if (key !== accountKey) {
           cache = undefined
           pending = undefined
           lastAttempt = 0
           accountKey = key
+          generation++
         }
 
+        const requestedGeneration = generation
         if (cache && Date.now() - cache.checkedAt < CACHE_MS && !requestInput?.refresh) {
           return { status: "ready", ...cache }
         }
         if (pending) {
           try {
-            return { status: "ready", ...await pending }
+            const snapshot = await pending
+            return generation === requestedGeneration ? { status: "ready", ...snapshot } : accountChanged()
           } catch {
+            if (generation !== requestedGeneration) return accountChanged()
             return cache
               ? { status: "stale", ...cache, message: "Could not refresh Codex limits" }
               : { status: "unavailable", message: "Could not fetch Codex limits" }
@@ -78,7 +96,6 @@ export default Plugin.define({
         }
 
         lastAttempt = now
-        const requestedKey = key
         const request = (async () => {
           const response = await fetch(USAGE_URL, {
             headers: {
@@ -92,18 +109,17 @@ export default Plugin.define({
 
           const snapshot = parseUsage(await response.json(), Date.now())
           if (!snapshot) throw new Error("Codex usage response had no supported windows")
-          if (accountKey === requestedKey) cache = snapshot
+          if (generation === requestedGeneration) cache = snapshot
           return snapshot
         })()
         pending = request
 
         try {
           const snapshot = await request
-          if (accountKey !== requestedKey) {
-            return { status: "unavailable", message: "OpenAI account changed; refreshing limits" }
-          }
+          if (generation !== requestedGeneration) return accountChanged()
           return { status: "ready", ...snapshot }
         } catch {
+          if (generation !== requestedGeneration) return accountChanged()
           return cache
             ? { status: "stale", ...cache, message: "Could not refresh Codex limits" }
             : { status: "unavailable", message: "Could not fetch Codex limits" }
