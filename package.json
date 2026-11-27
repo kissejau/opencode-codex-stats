@@ -2,6 +2,7 @@
   "name": "opencode-codex-stats",
   "version": "0.1.0",
   "description": "Codex usage statistics in the OpenCode terminal",
+  "license": "MIT",
   "type": "module",
   "repository": "github:kissejau/opencode-codex-stats",
   "files": ["server.ts", "tui.tsx", "rpc.ts", "polling.js", "settings.js", "usage.js"],
