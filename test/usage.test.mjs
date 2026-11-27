@@ -138,6 +138,8 @@ test("remaining usage selects the appropriate warning level at the thresholds", 
   assert.equal(usage.usageTone(30.1), "warning")
   assert.equal(usage.usageTone(30), "error")
   assert.equal(usage.usageTone(0), "error")
+  assert.equal(usage.usageTone(0, false), "normal")
+  assert.equal(usage.usageTone(45, false), "normal")
 })
 
 test("Codex display falls back to the current model only when the session has no override", () => {

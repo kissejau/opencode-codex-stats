@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   showProgressBar: true,
   showResetCountdown: true,
   showResetCredits: true,
+  colorful: true,
   pollIntervalSeconds: 90,
 })
 
@@ -17,6 +18,7 @@ export type Settings = {
   showProgressBar: boolean
   showResetCountdown: boolean
   showResetCredits: boolean
+  colorful: boolean
   pollIntervalSeconds: number
 }
 
@@ -29,6 +31,7 @@ export function normalizeSettings(value: unknown): Settings {
     showProgressBar: typeof saved.showProgressBar === "boolean" ? saved.showProgressBar : DEFAULT_SETTINGS.showProgressBar,
     showResetCountdown: typeof saved.showResetCountdown === "boolean" ? saved.showResetCountdown : DEFAULT_SETTINGS.showResetCountdown,
     showResetCredits: typeof saved.showResetCredits === "boolean" ? saved.showResetCredits : DEFAULT_SETTINGS.showResetCredits,
+    colorful: typeof saved.colorful === "boolean" ? saved.colorful : DEFAULT_SETTINGS.colorful,
     pollIntervalSeconds: typeof saved.pollIntervalSeconds === "number" && POLL_INTERVAL_SECONDS.includes(saved.pollIntervalSeconds)
       ? saved.pollIntervalSeconds
       : DEFAULT_SETTINGS.pollIntervalSeconds,

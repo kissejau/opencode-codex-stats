@@ -80,6 +80,7 @@ export default Plugin.define({
             { title: `Weekly usage: ${current.showWeekly ? "On" : "Off"}`, value: "weekly" },
             { title: `Percentage: ${current.showPercentage ? "On" : "Off"}`, value: "percentage" },
             { title: `Progress bar: ${current.showProgressBar ? "On" : "Off"}`, value: "progressBar" },
+            { title: `Colorful: ${current.colorful ? "On" : "Off"}`, value: "colorful" },
             { title: `Reset countdown: ${current.showResetCountdown ? "On" : "Off"}`, value: "resetCountdown" },
             { title: `Reset credits: ${current.showResetCredits ? "On" : "Off"}`, value: "resetCredits" },
             { title: `Poll interval: ${current.pollIntervalSeconds}s`, value: "pollInterval" },
@@ -105,6 +106,7 @@ export default Plugin.define({
         if (selected === "weekly") await saveSetting("showWeekly", !current.showWeekly)
         if (selected === "percentage") await saveSetting("showPercentage", !current.showPercentage)
         if (selected === "progressBar") await saveSetting("showProgressBar", !current.showProgressBar)
+        if (selected === "colorful") await saveSetting("colorful", !current.colorful)
         if (selected === "resetCountdown") await saveSetting("showResetCountdown", !current.showResetCountdown)
         if (selected === "resetCredits") await saveSetting("showResetCredits", !current.showResetCredits)
       }
@@ -127,7 +129,7 @@ export default Plugin.define({
       const remaining = () => remainingPercent(props.value?.usedPercent ?? 0)
       const bar = () => progressBar(remaining())
       const color = () => {
-        const tone = usageTone(remaining())
+        const tone = usageTone(remaining(), current().colorful)
         return tone === "normal" ? ctx.theme.text.muted : ctx.theme.text.feedback[tone].base
       }
       return (
