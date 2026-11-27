@@ -1,5 +1,5 @@
 import { Rpc } from "@opencode/plugin/rpc"
-import { POLL_INTERVAL_SECONDS } from "./settings.js"
+import { POLL_INTERVAL_SECONDS } from "./settings.ts"
 
 const window = {
   type: "object",

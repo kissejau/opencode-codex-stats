@@ -67,7 +67,8 @@ undocumented endpoint may change.
 
 ## Development
 
-Run the tests with `npm test`. Develop changes in a `feature/...` or `fix/...`
+Use Node.js 24 or newer for development. Run `npm ci`, `npm run typecheck`, and
+`npm test`. Develop changes in a `feature/...` or `fix/...`
 branch and submit a pull request to `main`.
 
 For a release, check the tests and package contents with `npm test` and

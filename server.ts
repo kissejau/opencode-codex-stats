@@ -1,8 +1,8 @@
 import { Plugin } from "@opencode/plugin"
-import { CodexLimits } from "./rpc.js"
-import { requestIntervalSeconds } from "./polling.js"
-import { isPollDue } from "./settings.js"
-import { parseUsage } from "./usage.js"
+import { CodexLimits } from "./rpc.ts"
+import { requestIntervalSeconds } from "./polling.ts"
+import { isPollDue } from "./settings.ts"
+import { parseUsage, type UsageSnapshot } from "./usage.ts"
 
 const USAGE_URL = "https://chatgpt.com/backend-api/wham/usage"
 const CACHE_MS = 90_000
@@ -10,13 +10,14 @@ const CACHE_MS = 90_000
 export default Plugin.define({
   id: "opencode-codex-stats.server",
   async setup(ctx) {
-    let cache
-    let accountKey
+    let cache: UsageSnapshot | undefined
+    let accountKey: string | undefined
     let lastAttempt = 0
-    let pending
+    let pending: Promise<UsageSnapshot> | undefined
 
     const registration = await ctx.rpc.register(CodexLimits, {
       read: async (input, { signal }) => {
+        const requestInput = input as { refresh?: boolean; pollIntervalSeconds?: number } | undefined
         const connection = await ctx.integration.connection.active("openai")
         if (!connection || connection.type !== "credential") {
           cache = undefined
@@ -56,7 +57,7 @@ export default Plugin.define({
           accountKey = key
         }
 
-        if (cache && Date.now() - cache.checkedAt < CACHE_MS && !input?.refresh) {
+        if (cache && Date.now() - cache.checkedAt < CACHE_MS && !requestInput?.refresh) {
           return { status: "ready", ...cache }
         }
         if (pending) {
@@ -68,7 +69,7 @@ export default Plugin.define({
               : { status: "unavailable", message: "Could not fetch Codex limits" }
           }
         }
-        const pollIntervalSeconds = requestIntervalSeconds(input)
+        const pollIntervalSeconds = requestIntervalSeconds(requestInput)
         const now = Date.now()
         if (!isPollDue(lastAttempt, now, pollIntervalSeconds)) {
           return cache

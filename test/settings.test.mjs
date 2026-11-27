@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 
-const settings = await import("../settings.js").catch(() => ({}))
+const settings = await import("../settings.ts")
 
 test("settings default to the current display and 90-second interval", () => {
   assert.deepEqual(settings.DEFAULT_SETTINGS, {
