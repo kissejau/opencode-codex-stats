@@ -133,7 +133,7 @@ export default Plugin.define({
         return tone === "normal" ? ctx.theme.text.muted : ctx.theme.text.feedback[tone].base
       }
       return (
-        <box flexDirection="row" gap={1}>
+        <box flexDirection="row" flexWrap="wrap" gap={1} rowGap={0}>
           <text fg={ctx.theme.text.muted} width={7} flexShrink={0}>{props.label}</text>
           <Show when={props.value} fallback={<text fg={ctx.theme.text.muted}>—</text>}>
             <Show when={current().showPercentage}>
@@ -143,8 +143,12 @@ export default Plugin.define({
             </Show>
             <Show when={current().showProgressBar}>
               <box flexDirection="row" flexShrink={0}>
-                <text fg={color()} flexShrink={0}>{bar().filled}</text>
-                <text fg={ctx.theme.text.muted} flexShrink={0}>{bar().empty}</text>
+                <Show when={bar().filled}>
+                  <text fg={color()} flexShrink={0}>{bar().filled}</text>
+                </Show>
+                <Show when={bar().empty}>
+                  <text fg={ctx.theme.text.muted} flexShrink={0}>{bar().empty}</text>
+                </Show>
               </box>
             </Show>
             <Show when={current().showResetCountdown}>
