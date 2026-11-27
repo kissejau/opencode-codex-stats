@@ -1,6 +1,6 @@
 {
   "name": "opencode-codex-stats",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Codex usage statistics in the OpenCode terminal",
   "license": "MIT",
   "type": "module",
