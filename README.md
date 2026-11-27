@@ -8,7 +8,9 @@ Show Codex usage limits in the OpenCode terminal sidebar.
 ## Requirements
 
 - OpenCode V2 (developed against 2.4.2).
-- An OpenAI account connected with ChatGPT OAuth via `/connect`. API keys are not supported.
+- An OpenAI account connected via `/connect` using **Codex browser (legacy)** or
+  **Codex device code (legacy)**. **Sign in with ChatGPT** and **API key** are
+  not supported by the current version.
 - An OpenAI model selected in the current session. The sidebar displays the plugin in a session.
 
 ## Install
@@ -55,8 +57,9 @@ Give your agent the repository URL and ask:
 
 Open a session using an OpenAI model and check the sidebar. Run `/codex-stats`
 to choose which rows to show and set the polling interval. If usage is
-unavailable, reconnect OpenAI through `/connect` and check that the sidebar is
-visible. Some accounts may not report every value.
+unavailable, open `/connect`, select OpenAI and connect using one of the two
+supported legacy methods. Check that the sidebar is visible. Some accounts may
+not report every value.
 
 The plugin sends your OpenAI OAuth access token and account ID to
 `https://chatgpt.com/backend-api/wham/usage` to fetch usage data. This
