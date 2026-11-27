@@ -18,7 +18,7 @@ export default Plugin.define({
 
     const accountChanged = () => ({ status: "unavailable" as const, message: "OpenAI account changed; refreshing limits" })
     const registration = await ctx.rpc.register(CodexLimits, {
-      read: async (input, { signal }) => {
+      read: async (input) => {
         const initialGeneration = generation
         const initialAccountKey = accountKey
         const requestInput = input as { refresh?: boolean; pollIntervalSeconds?: number } | undefined
@@ -103,7 +103,7 @@ export default Plugin.define({
               "ChatGPT-Account-Id": accountID,
               Accept: "application/json",
             },
-            signal: AbortSignal.any([signal, AbortSignal.timeout(8_000)]),
+            signal: AbortSignal.timeout(8_000),
           })
           if (!response.ok) throw new Error("Codex usage request failed")
 
