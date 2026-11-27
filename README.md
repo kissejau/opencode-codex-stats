@@ -66,3 +66,7 @@ undocumented endpoint may change.
 
 Run the tests with `npm test`. Develop changes in a `feature/...` or `fix/...`
 branch and submit them to `dev`; `main` is reserved for releases.
+
+For a release, open a pull request from `dev` to `main`, check the tests and
+package contents with `npm test` and `npm pack --dry-run`, and merge it. Publish
+the reviewed version from `main` to npm and tag the release.
