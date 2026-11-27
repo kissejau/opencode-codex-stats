@@ -47,7 +47,7 @@ async function server(t, fetch, resolveCredential) {
     },
   })
   return {
-    read: (input = {}) => read(input, { signal: new AbortController().signal }),
+    read: (input = {}, signal = new AbortController().signal) => read(input, { signal }),
     setAccount: (value) => { account = value },
     setCredentialType: (value) => { credentialType = value },
   }
@@ -202,6 +202,28 @@ test("parallel requests share a single fetch and receive the same usage", async 
   request.resolve(usageResponse(25))
   assert.equal((await first).hourly.usedPercent, 25)
   assert.equal((await second).hourly.usedPercent, 25)
+})
+
+test("canceling the first reader does not cancel the shared request for another reader", async (t) => {
+  const request = deferred()
+  const started = deferred()
+  const controller = new AbortController()
+  const api = await server(t, async (_url, { signal }) => {
+    started.resolve()
+    return Promise.race([
+      request.promise,
+      new Promise((_, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true })),
+    ])
+  })
+  const first = api.read({}, controller.signal)
+  await started.promise
+  const second = api.read()
+  await new Promise(setImmediate)
+  controller.abort()
+  request.resolve(usageResponse(25))
+  await first
+  assert.equal((await second).status, "ready")
+  assert.equal((await api.read()).hourly.usedPercent, 25)
 })
 
 test("simultaneous initial reads for the same account share the request", async (t) => {
