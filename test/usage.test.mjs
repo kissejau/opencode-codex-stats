@@ -131,6 +131,17 @@ test("remainingPercent returns the unused quota", () => {
   })
 })
 
+test("remaining usage selects the appropriate warning level at the thresholds", () => {
+  assert.equal(usage.usageTone(100), "normal")
+  assert.equal(usage.usageTone(60.1), "normal")
+  assert.equal(usage.usageTone(60), "warning")
+  assert.equal(usage.usageTone(30.1), "warning")
+  assert.equal(usage.usageTone(30), "error")
+  assert.equal(usage.usageTone(0), "error")
+  assert.equal(usage.usageTone(0, false), "normal")
+  assert.equal(usage.usageTone(45, false), "normal")
+})
+
 test("Codex display falls back to the current model only when the session has no override", () => {
   assert.equal(usage.isOpenAISessionModel(undefined, { providerID: "openai" }), true)
   assert.equal(usage.isOpenAISessionModel({ providerID: "anthropic" }, { providerID: "openai" }), false)

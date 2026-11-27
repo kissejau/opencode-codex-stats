@@ -11,6 +11,7 @@ test("settings default to the current display and 90-second interval", () => {
     showProgressBar: true,
     showResetCountdown: true,
     showResetCredits: true,
+    colorful: true,
     pollIntervalSeconds: 90,
   })
 })
@@ -24,6 +25,7 @@ test("normalizeSettings keeps valid values and defaults invalid values", () => {
       showProgressBar: true,
       showResetCountdown: false,
       showResetCredits: false,
+      colorful: false,
       pollIntervalSeconds: 5,
     }),
     {
@@ -33,11 +35,13 @@ test("normalizeSettings keeps valid values and defaults invalid values", () => {
       showProgressBar: true,
       showResetCountdown: false,
       showResetCredits: false,
+      colorful: false,
       pollIntervalSeconds: 5,
     },
   )
   assert.deepEqual(settings.normalizeSettings(null), settings.DEFAULT_SETTINGS)
   assert.equal(settings.normalizeSettings({ showResetCredits: "yes" }).showResetCredits, true)
+  assert.equal(settings.normalizeSettings({ colorful: "no" }).colorful, true)
   assert.equal(settings.normalizeSettings({ pollIntervalSeconds: 6 }).pollIntervalSeconds, 90)
 })
 
