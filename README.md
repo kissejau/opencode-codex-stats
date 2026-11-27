@@ -17,8 +17,8 @@ Show Codex usage limits in the OpenCode terminal sidebar.
 
 ### From npm
 
-After the package is published, add it to `~/.config/opencode/opencode.json` or
-`opencode.jsonc`, keeping any existing entries:
+Add it to `~/.config/opencode/opencode.json` or `opencode.jsonc`, keeping any
+existing entries:
 
 ```jsonc
 {
@@ -55,15 +55,32 @@ Give your agent the repository URL and ask:
 
 ## Usage
 
-Open a session using an OpenAI model and check the sidebar. Run `/codex-stats`
-to choose which rows to show and set the polling interval. If usage is
-unavailable, open `/connect`, select OpenAI and connect using one of the two
-supported legacy methods. Check that the sidebar is visible. Some accounts may
-not report every value.
+Open a session using an OpenAI model and check the sidebar. For example:
+
+```text
+Codex
+hourly  63%  ██████░░░░  (2h14m)
+weekly  39%  ████░░░░░░  (3d8h)
+resets  3
+```
+
+The example reflects the current source; the published npm version may differ.
+Percentages and bars show remaining usage; countdowns show time until reset.
+Run `/codex-stats` to choose which rows to show and set the polling interval.
+The `hourly` row represents the five-hour window.
 
 The plugin sends your OpenAI OAuth access token and account ID to
 `https://chatgpt.com/backend-api/wham/usage` to fetch usage data. This
 undocumented endpoint may change.
+
+## Troubleshooting
+
+- **No Codex panel:** open a session with an OpenAI model and make sure the
+  sidebar is visible. Check that the plugin is present in your configuration.
+- **Usage unavailable:** use `/connect` to connect OpenAI with one of the
+  supported legacy Codex methods. ChatGPT sign-in and API keys are not supported.
+- **Stale or missing values:** the usage request may have failed, or your account
+  may not report every value. Check the connection and try again later.
 
 ## Development
 
