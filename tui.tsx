@@ -9,6 +9,7 @@ import {
   isOpenAISessionModel,
   progressBar,
   remainingPercent,
+  usageTone,
   type UsageResult,
   type UsageWindow,
 } from "./usage.ts"
@@ -125,18 +126,22 @@ export default Plugin.define({
       const current = () => currentSettings()
       const remaining = () => remainingPercent(props.value?.usedPercent ?? 0)
       const bar = () => progressBar(remaining())
+      const color = () => {
+        const tone = usageTone(remaining())
+        return tone === "normal" ? ctx.theme.text.muted : ctx.theme.text.feedback[tone].base
+      }
       return (
         <box flexDirection="row" gap={1}>
           <text fg={ctx.theme.text.muted} width={7} flexShrink={0}>{props.label}</text>
           <Show when={props.value} fallback={<text fg={ctx.theme.text.muted}>—</text>}>
             <Show when={current().showPercentage}>
-              <text fg={ctx.theme.text.muted} width={4} flexShrink={0}>
+              <text fg={color()} width={4} flexShrink={0}>
                 {Math.round(remaining())}%
               </text>
             </Show>
             <Show when={current().showProgressBar}>
               <box flexDirection="row" flexShrink={0}>
-                <text fg={ctx.theme.text.muted} flexShrink={0}>{bar().filled}</text>
+                <text fg={color()} flexShrink={0}>{bar().filled}</text>
                 <text fg={ctx.theme.text.muted} flexShrink={0}>{bar().empty}</text>
               </box>
             </Show>

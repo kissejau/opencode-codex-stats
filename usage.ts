@@ -59,6 +59,10 @@ export function remainingPercent(usedPercent: number) {
   return 100 - usedPercent
 }
 
+export function usageTone(remaining: number) {
+  return remaining > 60 ? "normal" : remaining > 30 ? "warning" : "error"
+}
+
 export function isOpenAISessionModel(sessionModel: { providerID?: string } | null | undefined, selectedModel: { providerID?: string } | null | undefined) {
   return (sessionModel?.providerID ?? selectedModel?.providerID) === "openai"
 }
