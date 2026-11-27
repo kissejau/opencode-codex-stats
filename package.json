@@ -5,9 +5,17 @@
   "license": "MIT",
   "type": "module",
   "repository": "github:kissejau/opencode-codex-stats",
-  "files": ["server.ts", "tui.tsx", "rpc.ts", "polling.js", "settings.js", "usage.js"],
+  "files": [
+    "server.ts",
+    "tui.tsx",
+    "rpc.ts",
+    "polling.ts",
+    "settings.ts",
+    "usage.ts"
+  ],
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "exports": {
     ".": "./server.ts",
@@ -21,5 +29,9 @@
     "@opentui/core": ">=0.6.6",
     "@opentui/solid": ">=0.6.6",
     "solid-js": ">=1.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.4",
+    "typescript": "^5.9.3"
   }
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 
-const usage = await import("../usage.js").catch(() => ({}))
+const usage = await import("../usage.ts")
 
 function deferred() {
   let resolve

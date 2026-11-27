@@ -1,8 +1,8 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { isPollDue, normalizeSettings } from "../settings.js"
+import { isPollDue, normalizeSettings } from "../settings.ts"
 
-const polling = await import("../polling.js").catch(() => ({}))
+const polling = await import("../polling.ts")
 
 test("server request interval accepts five seconds and preserves the 15-second legacy default", () => {
   const configured = polling.requestIntervalSeconds({ pollIntervalSeconds: 5 })

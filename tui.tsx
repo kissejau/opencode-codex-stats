@@ -1,21 +1,23 @@
 import { Plugin } from "@opencode/plugin/tui"
 import { Show } from "solid-js"
-import { CodexLimits } from "./rpc.js"
-import { createPollScheduler } from "./polling.js"
-import { DEFAULT_SETTINGS, normalizeSettings, POLL_INTERVAL_SECONDS } from "./settings.js"
+import { CodexLimits } from "./rpc.ts"
+import { createPollScheduler } from "./polling.ts"
+import { DEFAULT_SETTINGS, normalizeSettings, POLL_INTERVAL_SECONDS, type Settings } from "./settings.ts"
 import {
   createRefreshController,
   formatRemaining,
   isOpenAISessionModel,
   progressBar,
   remainingPercent,
-} from "./usage.js"
+  type UsageResult,
+  type UsageWindow,
+} from "./usage.ts"
 
 export default Plugin.define({
   id: "opencode-codex-stats.tui",
   setup(ctx) {
     const rpc = ctx.client.rpc(CodexLimits)
-    const [limits, updateLimits] = ctx.storage.memory("limits", {
+    const [limits, updateLimits] = ctx.storage.memory<Omit<UsageResult, "status"> & { status: UsageResult["status"] | "loading"; now: number }>("limits", {
       initial: { status: "loading", now: Date.now() },
     })
     const [settings, updateSettings] = ctx.storage.store("codex-limits.settings", {
@@ -23,14 +25,14 @@ export default Plugin.define({
     })
     const currentSettings = () => normalizeSettings(settings)
     const refresh = createRefreshController({
-      read: (force) =>
-        rpc.read(
+      read: async (force) =>
+        await rpc.read(
           { refresh: force, pollIntervalSeconds: currentSettings().pollIntervalSeconds },
           {
             location: ctx.location ?? ctx.data.location.default(),
             signal: AbortSignal.timeout(10_000),
           },
-        ),
+        ) as UsageResult,
       onResult: (result) => {
         updateLimits((draft) => {
           draft.status = result.status
@@ -55,7 +57,7 @@ export default Plugin.define({
       poll.restart(intervalSeconds)
     }
 
-    async function saveSetting(key, value) {
+    async function saveSetting<K extends keyof Settings>(key: K, value: Settings[K]) {
       const previousInterval = currentSettings().pollIntervalSeconds
       await updateSettings((draft) => {
         Object.assign(draft, normalizeSettings({ ...draft, [key]: value }))
@@ -119,7 +121,7 @@ export default Plugin.define({
       }],
     }))
 
-    function UsageRow(props) {
+    function UsageRow(props: { label: string; value?: UsageWindow }) {
       const current = () => currentSettings()
       const remaining = () => remainingPercent(props.value?.usedPercent ?? 0)
       const bar = () => progressBar(remaining())
@@ -140,7 +142,7 @@ export default Plugin.define({
             </Show>
             <Show when={current().showResetCountdown}>
               <text fg={ctx.theme.text.muted}>
-                ({formatRemaining(props.value.resetsAt, limits.now)})
+                ({formatRemaining(props.value?.resetsAt, limits.now)})
               </text>
             </Show>
           </Show>

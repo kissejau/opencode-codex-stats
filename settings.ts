@@ -10,8 +10,18 @@ export const DEFAULT_SETTINGS = Object.freeze({
   pollIntervalSeconds: 90,
 })
 
-export function normalizeSettings(value) {
-  const saved = value && typeof value === "object" ? value : {}
+export type Settings = {
+  showHourly: boolean
+  showWeekly: boolean
+  showPercentage: boolean
+  showProgressBar: boolean
+  showResetCountdown: boolean
+  showResetCredits: boolean
+  pollIntervalSeconds: number
+}
+
+export function normalizeSettings(value: unknown): Settings {
+  const saved = value && typeof value === "object" ? value as Record<string, unknown> : {}
   return {
     showHourly: typeof saved.showHourly === "boolean" ? saved.showHourly : DEFAULT_SETTINGS.showHourly,
     showWeekly: typeof saved.showWeekly === "boolean" ? saved.showWeekly : DEFAULT_SETTINGS.showWeekly,
@@ -19,12 +29,12 @@ export function normalizeSettings(value) {
     showProgressBar: typeof saved.showProgressBar === "boolean" ? saved.showProgressBar : DEFAULT_SETTINGS.showProgressBar,
     showResetCountdown: typeof saved.showResetCountdown === "boolean" ? saved.showResetCountdown : DEFAULT_SETTINGS.showResetCountdown,
     showResetCredits: typeof saved.showResetCredits === "boolean" ? saved.showResetCredits : DEFAULT_SETTINGS.showResetCredits,
-    pollIntervalSeconds: POLL_INTERVAL_SECONDS.includes(saved.pollIntervalSeconds)
+    pollIntervalSeconds: typeof saved.pollIntervalSeconds === "number" && POLL_INTERVAL_SECONDS.includes(saved.pollIntervalSeconds)
       ? saved.pollIntervalSeconds
       : DEFAULT_SETTINGS.pollIntervalSeconds,
   }
 }
 
-export function isPollDue(lastAttempt, now, intervalSeconds) {
+export function isPollDue(lastAttempt: number, now: number, intervalSeconds: number) {
   return now - lastAttempt >= intervalSeconds * 1000
 }

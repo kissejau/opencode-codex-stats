@@ -1,19 +1,26 @@
 const FIVE_HOURS = 5 * 60 * 60
 const ONE_WEEK = 7 * 24 * 60 * 60
 
-function record(value) {
-  return value !== null && typeof value === "object" && !Array.isArray(value) ? value : undefined
+export type UsageWindow = { usedPercent: number; resetsAt?: number }
+export type UsageSnapshot = { checkedAt: number; hourly?: UsageWindow; weekly?: UsageWindow; availableResets?: number }
+export type UsageResult = Partial<UsageSnapshot> & { status: "ready" | "stale" | "unavailable"; message?: string }
+
+function record(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : undefined
 }
 
-function parseWindow(value, checkedAt) {
+function parseWindow(value: unknown, checkedAt: number) {
   const input = record(value)
-  if (!input || !Number.isFinite(input.limit_window_seconds) || !Number.isFinite(input.used_percent)) return
+  if (!input || typeof input.limit_window_seconds !== "number" || !Number.isFinite(input.limit_window_seconds) ||
+      typeof input.used_percent !== "number" || !Number.isFinite(input.used_percent)) return
 
   let resetsAt
-  if (Number.isSafeInteger(input.reset_at) && input.reset_at > 0) {
+  if (typeof input.reset_at === "number" && Number.isSafeInteger(input.reset_at) && input.reset_at > 0) {
     resetsAt = input.reset_at
   } else if (
-    Number.isFinite(input.reset_after_seconds) &&
+    typeof input.reset_after_seconds === "number" && Number.isFinite(input.reset_after_seconds) &&
     input.reset_after_seconds >= 0 &&
     Number.isFinite(checkedAt)
   ) {
@@ -29,14 +36,14 @@ function parseWindow(value, checkedAt) {
   }
 }
 
-export function parseUsage(body, checkedAt = Date.now()) {
+export function parseUsage(body: unknown, checkedAt = Date.now()): UsageSnapshot | undefined {
   const input = record(body)
   const rateLimit = record(input?.rate_limit)
   if (!rateLimit) return
 
-  const snapshot = { checkedAt }
-  const availableResets = record(input.rate_limit_reset_credits)?.available_count
-  if (Number.isSafeInteger(availableResets) && availableResets >= 0) {
+  const snapshot: UsageSnapshot = { checkedAt }
+  const availableResets = record(input?.rate_limit_reset_credits)?.available_count
+  if (typeof availableResets === "number" && Number.isSafeInteger(availableResets) && availableResets >= 0) {
     snapshot.availableResets = availableResets
   }
   for (const value of [rateLimit.primary_window, rateLimit.secondary_window]) {
@@ -48,15 +55,19 @@ export function parseUsage(body, checkedAt = Date.now()) {
   return snapshot.hourly || snapshot.weekly ? snapshot : undefined
 }
 
-export function remainingPercent(usedPercent) {
+export function remainingPercent(usedPercent: number) {
   return 100 - usedPercent
 }
 
-export function isOpenAISessionModel(sessionModel, selectedModel) {
+export function isOpenAISessionModel(sessionModel: { providerID?: string } | null | undefined, selectedModel: { providerID?: string } | null | undefined) {
   return (sessionModel?.providerID ?? selectedModel?.providerID) === "openai"
 }
 
-export function createRefreshController({ read, onResult, onError }) {
+export function createRefreshController<T>({ read, onResult, onError }: {
+  read: (force: boolean) => Promise<T>
+  onResult: (result: T) => void
+  onError: () => void
+}) {
   let running = false
   let rerun = false
   let disposed = false
@@ -95,8 +106,8 @@ export function createRefreshController({ read, onResult, onError }) {
   }
 }
 
-export function formatRemaining(resetsAt, now = Date.now()) {
-  if (!Number.isFinite(resetsAt)) return "—"
+export function formatRemaining(resetsAt: number | undefined, now = Date.now()) {
+  if (resetsAt === undefined || !Number.isFinite(resetsAt)) return "—"
 
   const minutes = Math.max(0, Math.ceil((resetsAt * 1000 - now) / 60_000))
   if (minutes === 0) return "0m"
@@ -110,7 +121,7 @@ export function formatRemaining(resetsAt, now = Date.now()) {
   return `${remainingMinutes}m`
 }
 
-export function progressBar(usedPercent, width = 10) {
+export function progressBar(usedPercent: number, width = 10) {
   const safeWidth = Math.max(1, Math.floor(width))
   const percent = Number.isFinite(usedPercent) ? Math.max(0, Math.min(100, usedPercent)) : 0
   const filled = Math.round((percent / 100) * safeWidth)
